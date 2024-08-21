@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(request: Request) {
+
+  const {userId} = auth()
+
+  if(!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
   const merchant = searchParams.get('merchant');

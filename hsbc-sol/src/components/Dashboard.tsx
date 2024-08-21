@@ -13,15 +13,21 @@ import { Button } from "@/components/ui/button";
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   PieChart,
   Pie,
+  ScatterChart,
+  Scatter,
   XAxis,
   YAxis,
+  ZAxis,
   Tooltip,
   Legend,
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface FinancialData {
   fraudByCategory: {
@@ -39,6 +45,24 @@ interface FinancialData {
   genderDistribution: { _id: string; count: number }[];
   fraudByZipcode: { zipcode: string; fraudRate: number }[];
   topMerchants: { _id: string; totalAmount: number }[];
+  customerBehavior: {
+    _id: { age: string; gender: string; category: string };
+    count: number;
+    fraudCount: number;
+    totalAmount: number;
+  }[];
+  fraudIndicators: { _id: { amount: number; fraud: number }; count: number }[];
+  geographicalAnalysis: {
+    _id: { customerZip: string; merchantZip: string; fraud: number };
+    count: number;
+    totalAmount: number;
+  }[];
+  stepAnalysis: {
+    _id: number;
+    fraudCount: number;
+    totalCount: number;
+    totalAmount: number;
+  }[];
 }
 
 const COLORS = [
@@ -50,24 +74,44 @@ const COLORS = [
   "#82CA9D",
 ];
 
-export function Dashboard() {
+const Dashboard = () => {
   const [data, setData] = useState<FinancialData | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [merchant, setMerchant] = useState<string | null>(null);
+  const [ageRange, setAgeRange] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const params = new URLSearchParams({
-        ...(category && { category }),
-        ...(merchant && { merchant }),
-      });
+      try {
+        setError(null);
+        const params = new URLSearchParams({
+          ...(category && { category }),
+          ...(merchant && { merchant }),
+          ...(ageRange && { ageRange }),
+        });
 
-      const response = await fetch(`/api/financialData?${params}`);
-      const data = await response.json();
-      setData(data);
+        const response = await fetch(`/api/financialData?${params}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const data = await response.json();
+        setData(data);
+      } catch (err) {
+        setError("An error occurred while fetching data. Please try again.");
+      }
     };
     fetchData();
-  }, [category, merchant]);
+  }, [category, merchant, ageRange]);
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   if (!data) return <div>Loading...</div>;
 
@@ -102,6 +146,7 @@ export function Dashboard() {
           onClick={() => {
             setCategory(null);
             setMerchant(null);
+            setAgeRange(null);
           }}
         >
           Reset Filters
@@ -117,11 +162,12 @@ export function Dashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.fraudByCategory}>
                 <XAxis dataKey="category" />
-                <YAxis />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="fraudCount" fill="#8884d8" />
-                <Bar dataKey="fraudRate" fill="#82ca9d" />
+                <Bar yAxisId="left" dataKey="fraudCount" fill="#8884d8" />
+                <Bar yAxisId="right" dataKey="fraudRate" fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -135,11 +181,12 @@ export function Dashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.amountByMerchant.slice(0, 10)}>
                 <XAxis dataKey="merchant" />
-                <YAxis />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="totalAmount" fill="#8884d8" />
-                <Bar dataKey="fraudAmount" fill="#82ca9d" />
+                <Bar yAxisId="left" dataKey="totalAmount" fill="#8884d8" />
+                <Bar yAxisId="right" dataKey="fraudRate" fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -195,52 +242,77 @@ export function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top 10 Fraud Rate by Zipcode</CardTitle>
+            <CardTitle>Customer Behavior</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.fraudByZipcode}>
-                <XAxis dataKey="zipcode" />
-                <YAxis />
-                <Tooltip />
+              <ScatterChart>
+                <XAxis dataKey="_id.age" name="Age" type="number" />
+                <YAxis dataKey="totalAmount" name="Total Amount" />
+                <ZAxis dataKey="fraudCount" name="Fraud Count" />
+                <Tooltip cursor={{ strokeDasharray: "3 3" }} />
                 <Legend />
-                <Bar dataKey="fraudRate" fill="#8884d8" />
-              </BarChart>
+                <Scatter
+                  name="Customer Behavior"
+                  data={data.customerBehavior}
+                  fill="#8884d8"
+                />
+              </ScatterChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Top 10 Merchants by Transaction Amount</CardTitle>
+            <CardTitle>Fraud Indicators</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={data.topMerchants}
-                  dataKey="totalAmount"
-                  nameKey="_id"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  fill="#8884d8"
-                  label
-                >
-                  {data.topMerchants.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
+              <LineChart data={data.fraudIndicators}>
+                <XAxis dataKey="_id.amount" />
+                <YAxis />
                 <Tooltip />
                 <Legend />
-              </PieChart>
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#8884d8"
+                  name="Transaction Count"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Step Analysis</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={data.stepAnalysis}>
+                <XAxis dataKey="_id" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="totalCount"
+                  stroke="#8884d8"
+                  name="Total Count"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="fraudCount"
+                  stroke="#82ca9d"
+                  name="Fraud Count"
+                />
+              </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
     </div>
   );
-}
+};
+
+export default Dashboard;

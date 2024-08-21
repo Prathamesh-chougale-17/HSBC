@@ -1,15 +1,16 @@
+// components/Dashboard.tsx
 "use client";
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Select,
+  SelectTrigger,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   BarChart,
   Bar,
@@ -17,17 +18,13 @@ import {
   Line,
   PieChart,
   Pie,
-  ScatterChart,
-  Scatter,
   XAxis,
   YAxis,
-  ZAxis,
   Tooltip,
   Legend,
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface FinancialData {
   fraudByCategory: {
@@ -76,14 +73,16 @@ const COLORS = [
 
 const Dashboard = () => {
   const [data, setData] = useState<FinancialData | null>(null);
-  const [category, setCategory] = useState<string | null>(null);
-  const [merchant, setMerchant] = useState<string | null>(null);
-  const [ageRange, setAgeRange] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>("");
+  const [merchant, setMerchant] = useState<string>("");
+  const [ageRange, setAgeRange] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         setError(null);
         const params = new URLSearchParams({
           ...(category && { category }),
@@ -97,6 +96,7 @@ const Dashboard = () => {
         }
         const data = await response.json();
         setData(data);
+        setLoading(false);
       } catch (err) {
         setError("An error occurred while fetching data. Please try again.");
       }
@@ -106,37 +106,50 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" className="mb-8">
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
   }
 
-  if (!data) return <div>Loading...</div>;
+  if (!data || loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-4">
-        <Select onValueChange={(value) => setCategory(value)}>
-          <SelectTrigger className="w-[180px]">
+    <div className="container mx-auto py-8 px-4 md:px-8">
+      <div className="flex flex-wrap gap-4 mb-8">
+        <Select value={category} onValueChange={(value) => setCategory(value)}>
+          <SelectTrigger className="bg-gray-100 hover:bg-gray-200 rounded-md px-4 py-2 w-full">
             <SelectValue placeholder="Select Category" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white shadow-lg rounded-md">
             {data.fraudByCategory.map(({ category }) => (
-              <SelectItem key={category} value={category}>
+              <SelectItem
+                key={category}
+                value={category}
+                className="hover:bg-gray-100 px-4 py-2"
+              >
                 {category}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Select onValueChange={(value) => setMerchant(value)}>
-          <SelectTrigger className="w-[180px]">
+        <Select value={merchant} onValueChange={(value) => setMerchant(value)}>
+          <SelectTrigger className="bg-gray-100 hover:bg-gray-200 rounded-md px-4 py-2 w-full">
             <SelectValue placeholder="Select Merchant" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white shadow-lg rounded-md">
             {data.topMerchants.map(({ _id }) => (
-              <SelectItem key={_id} value={_id}>
+              <SelectItem
+                key={_id}
+                value={_id}
+                className="hover:bg-gray-100 px-4 py-2"
+              >
                 {_id}
               </SelectItem>
             ))}
@@ -144,28 +157,53 @@ const Dashboard = () => {
         </Select>
         <Button
           onClick={() => {
-            setCategory(null);
-            setMerchant(null);
-            setAgeRange(null);
+            setCategory("");
+            setMerchant("");
+            setAgeRange("");
           }}
+          className="bg-red-500 hover:bg-red-600 text-white rounded-md px-4 py-2"
         >
           Reset Filters
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Fraud by Category</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Fraud by Category
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.fraudByCategory}>
-                <XAxis dataKey="category" />
+                <XAxis
+                  dataKey="category"
+                  tickFormatter={(value) => value.slice(0, 10)}
+                />
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "12px",
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                />
+                <Legend
+                  iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#333",
+                  }}
+                />
                 <Bar yAxisId="left" dataKey="fraudCount" fill="#8884d8" />
                 <Bar yAxisId="right" dataKey="fraudRate" fill="#82ca9d" />
               </BarChart>
@@ -173,18 +211,42 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Amount by Merchant</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Amount by Merchant
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.amountByMerchant.slice(0, 10)}>
-                <XAxis dataKey="merchant" />
+                <XAxis
+                  dataKey="merchant"
+                  tickFormatter={(value) => value.slice(0, 10)}
+                />
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
-                <Tooltip />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "12px",
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                />
+                <Legend
+                  iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#333",
+                  }}
+                />
                 <Bar yAxisId="left" dataKey="totalAmount" fill="#8884d8" />
                 <Bar yAxisId="right" dataKey="fraudRate" fill="#82ca9d" />
               </BarChart>
@@ -192,26 +254,49 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Age Distribution</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Age Distribution
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.ageDistribution}>
                 <XAxis dataKey="_id" />
                 <YAxis />
-                <Tooltip />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "12px",
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                />
+                <Legend
+                  iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#333",
+                  }}
+                />
                 <Bar dataKey="count" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Gender Distribution</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Gender Distribution
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -233,78 +318,119 @@ const Dashboard = () => {
                     />
                   ))}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "12px",
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                />
+                <Legend
+                  iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#333",
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Customer Behavior</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <ScatterChart>
-                <XAxis dataKey="_id.age" name="Age" type="number" />
-                <YAxis dataKey="totalAmount" name="Total Amount" />
-                <ZAxis dataKey="fraudCount" name="Fraud Count" />
-                <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-                <Legend />
-                <Scatter
-                  name="Customer Behavior"
-                  data={data.customerBehavior}
-                  fill="#8884d8"
-                />
-              </ScatterChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Fraud Indicators</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Fraud Indicators
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data.fraudIndicators}>
                 <XAxis dataKey="_id.amount" />
                 <YAxis />
-                <Tooltip />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "12px",
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                />
+                <Legend
+                  iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#333",
+                  }}
+                />
                 <Line
                   type="monotone"
                   dataKey="count"
                   stroke="#8884d8"
                   name="Transaction Count"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Step Analysis</CardTitle>
+            <CardTitle className="text-2xl font-bold">Step Analysis</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data.stepAnalysis}>
                 <XAxis dataKey="_id" />
                 <YAxis />
-                <Tooltip />
-                <Legend />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    color: "#333",
+                    border: "none",
+                    borderRadius: "4px",
+                    padding: "12px",
+                    boxShadow:
+                      "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                  }}
+                  itemStyle={{ color: "#333" }}
+                />
+                <Legend
+                  iconType="circle"
+                  iconSize={10}
+                  wrapperStyle={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#333",
+                  }}
+                />
                 <Line
                   type="monotone"
                   dataKey="totalCount"
                   stroke="#8884d8"
                   name="Total Count"
+                  strokeWidth={2}
                 />
                 <Line
                   type="monotone"
                   dataKey="fraudCount"
                   stroke="#82ca9d"
                   name="Fraud Count"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>

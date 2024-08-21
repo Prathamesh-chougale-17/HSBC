@@ -39,3 +39,13 @@ The dashboard is designed to be highly customizable and extendable. You can modi
 5. **Accessibility**: The dashboard includes some accessibility features, such as proper labeling and alternative text for charts. You can further enhance the accessibility by adding more ARIA attributes and following the WCAG guidelines.
 
 6. **Performance**: The dashboard implements techniques like code splitting and lazy loading to optimize performance. You can explore additional optimization strategies based on your specific use case and data volume.
+
+## Images
+1. Charts
+![alt text](image.png)
+2. Api Authentication (unautheticated)
+![alt text](image-1.png)
+3. Api Athentication (authenticated)
+![alt text](image-2.png)
+4. Data fetch by category
+![alt text](image-3.png)

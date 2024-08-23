@@ -344,7 +344,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* <Card className="shadow-lg">
+        <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">
               Fraud Indicators
@@ -435,7 +435,7 @@ const Dashboard = () => {
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card> */}
+        </Card>
       </div>
     </div>
   );

@@ -1,5 +1,3 @@
-Sure, here's a README file that explains how the dashboard showcases fraud detection using various graphs:
-
 # Fraud Detection Dashboard
 
 This is a comprehensive dashboard that provides insights into financial fraud detection using various data visualization techniques. The dashboard is built using React, TypeScript, Tailwind CSS, and Recharts.

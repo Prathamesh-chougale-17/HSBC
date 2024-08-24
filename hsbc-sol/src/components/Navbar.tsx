@@ -1,4 +1,3 @@
-// app/components/Navbar.tsx
 "use client";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useState } from "react";

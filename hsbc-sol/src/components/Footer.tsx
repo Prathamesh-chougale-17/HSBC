@@ -1,4 +1,3 @@
-// app/components/Footer.tsx
 "use client";
 import { FaFacebookF, FaTwitter, FaLinkedinIn } from "react-icons/fa";
 import Link from "next/link";

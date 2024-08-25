@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useState } from "react";
 
 const HeroSection = () => {
@@ -82,7 +83,8 @@ const HeroSection = () => {
             data-driven decisions with confidence and ease.
           </motion.p>
           <motion.div variants={itemVariants}>
-            <button
+            <Link
+              href="/dashboard"
               className="bg-white text-blue-600 py-4 px-8 rounded-full text-lg font-semibold hover:bg-yellow-300 hover:text-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
@@ -95,7 +97,7 @@ const HeroSection = () => {
               >
                 →
               </motion.span>
-            </button>
+            </Link>
           </motion.div>
         </motion.div>
         <motion.div

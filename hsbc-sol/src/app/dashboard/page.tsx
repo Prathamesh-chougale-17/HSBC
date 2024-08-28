@@ -5,7 +5,7 @@ const Dashboardpage = () => {
   return (
     <div>
       <main className="p-8">
-        <h1 className="text-3xl font-bold mb-8">HSBC Financial Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-8">HSBC HSBC</h1>
         <Dashboard />
       </main>
     </div>

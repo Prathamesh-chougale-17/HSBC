@@ -15,7 +15,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow-lg">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/">Financial Dashboard</Link>
+        <Link href="/">HSBC</Link>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}

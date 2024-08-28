@@ -14,7 +14,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
         <div className="mb-4 md:mb-0">
           <Link href="/" className="text-white font-bold text-2xl">
-            Financial Dashboard
+            HSBC{" "}
           </Link>
         </div>
         <div className="flex space-x-6">
@@ -50,7 +50,7 @@ const Footer = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          &copy; 2023 Financial Dashboard. All rights reserved.
+          &copy; 2023 HSBC. All rights reserved.
         </motion.p>
       </div>
     </motion.footer>

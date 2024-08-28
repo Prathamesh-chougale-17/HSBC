@@ -79,8 +79,8 @@ const HeroSection = () => {
             variants={itemVariants}
             className="text-xl md:text-2xl mb-10 leading-relaxed"
           >
-            Our cutting-edge HSBC empowers you to make data-driven decisions
-            with confidence and ease.
+            Our cutting-edge Financial Dashboard empowers you to make
+            data-driven decisions with confidence and ease.
           </motion.p>
           <motion.div variants={itemVariants}>
             <Link
